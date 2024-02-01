@@ -37,12 +37,6 @@ Run the migration:
     php artisan migrate
 ```
 
-Add the Blockfrost project id to the .env file. Example:
-
-```
-BLOCKFROST_PROJECT_ID=mainnet...
-```
-
 Add the Blockfrost project id to the file /config/blockfrost.php
 
 ```
