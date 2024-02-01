@@ -28,7 +28,7 @@ Publish the config file:
 Publish the migration file:
 
 ```sh
-    php artisan vendor:publish --provider="IAMXID\IamxPaymentGateway\PaymentGatewayServiceProvider" --tag="migrations"
+    php artisan vendor:publish --provider="IAMXID\IamxPaymentGateway\IamxPaymentGatewayServiceProvider" --tag="migrations"
 ```
 
 Run the migration:
