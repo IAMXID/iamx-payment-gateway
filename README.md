@@ -52,13 +52,13 @@ Use the POST route [ROOT_URL]/iamx_payment_gateway/setNewPayment to insert a new
 Payment in native token
 
 ```
-curl --location --request POST '[ROOT_URL]/iamx_payment_gateway/setNewPayment?uuid=[UUID of the transaction]&wallet_receiver=[wallet address of the receiver]&wallet_sender=[wallet address of the sender]&after_blockheight=[blockheight before the transaction]&token_amount=[amount of token]&token_policy_id=[token policy id]&token_name_hex=[token name in hex format]'
+curl --location --request POST '[ROOT_URL]/iamx_payment_gateway/setNewPayment?uuid=[UUID of the transaction]&wallet_receiver=[wallet address of the receiver]&wallet_sender=[stake address of the sender]&after_blockheight=[blockheight before the transaction]&token_amount=[amount of token]&token_policy_id=[token policy id]&token_name_hex=[token name in hex format]'
 ```
 
 Payment in ADA
 
 ```
-curl --location --request POST '[ROOT_URL]/iamx_payment_gateway/setNewPayment?uuid=[UUID of the transaction]&wallet_receiver=[wallet address of the receiver]&wallet_sender=[wallet address of the sender]&after_blockheight=[blockheight before the transaction]&token_amount=[amount of ADA in lovelace]'
+curl --location --request POST '[ROOT_URL]/iamx_payment_gateway/setNewPayment?uuid=[UUID of the transaction]&wallet_receiver=[wallet address of the receiver]&wallet_sender=[stake address of the sender]&after_blockheight=[blockheight before the transaction]&token_amount=[amount of ADA in lovelace]'
 ```
 
 Use the GET route [ROOT_URL]/iamx_payment_gateway/checkPayment to check if the payment is confirmed by the blockchain

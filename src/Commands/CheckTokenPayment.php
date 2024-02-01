@@ -43,61 +43,78 @@ class CheckTokenPayment extends Command
             $paymentFound = false;
             $paymentTxID = null;
 
-            $responseAddressTransactions = Http::retry(5, 100)
+            $responseAccountAddresses = Http::retry(5, 100)
                 ->timeout(30)
                 ->withHeaders(['Accept' => 'application/json', 'project_id' => config('blockfrost.project_id')])
-                ->get('https://cardano-mainnet.blockfrost.io/api/v0/addresses/'.$openPayment->wallet_sender.'/transactions', [
-                        'from' => $openPayment->after_blockheight,
-                        'order' => 'desc'
-                    ]
-                );
+                ->get('https://cardano-mainnet.blockfrost.io/api/v0/accounts/'.$openPayment->wallet_sender.'/addresses');
 
-            $addressTransactions = json_decode($responseAddressTransactions->body());
+            $accountAddresses = json_decode($responseAccountAddresses->body());
 
-            foreach ($addressTransactions as $addressTransaction) {
+            foreach ($accountAddresses as $accountAddress) {
 
-                //Log::info('tx-hash '.$addressTransaction->tx_hash.' used.');
+                //Log::info('Wallet address '.$accountAddress->address.' is used for search');
 
-                $responseTxInfo = Http::retry(5, 100)
+                $responseAddressTransactions = Http::retry(5, 100)
                     ->timeout(30)
                     ->withHeaders(['Accept' => 'application/json', 'project_id' => config('blockfrost.project_id')])
-                    ->get('https://cardano-mainnet.blockfrost.io/api/v0/txs/'.$addressTransaction->tx_hash.'/utxos');
+                    ->get('https://cardano-mainnet.blockfrost.io/api/v0/addresses/'.$accountAddress->address.'/transactions', [
+                            'from' => $openPayment->after_blockheight,
+                            'order' => 'desc'
+                        ]
+                    );
 
-                $txInfo = json_decode($responseTxInfo->body());
+                $addressTransactions = json_decode($responseAddressTransactions->body());
 
-                $outputs = $txInfo->outputs;
-                foreach ($outputs as $output) {
+                foreach ($addressTransactions as $addressTransaction) {
 
-                    //Log::info('Output address '.$output->address.' -- receiver address '.$openPayment->wallet_receiver);
+                    //Log::info('tx-hash '.$addressTransaction->tx_hash.' used.');
 
-                    if ($output->address == $openPayment->wallet_receiver) {
-                        foreach ($output->amount as $amount) {
+                    $responseTxInfo = Http::retry(5, 100)
+                        ->timeout(30)
+                        ->withHeaders(['Accept' => 'application/json', 'project_id' => config('blockfrost.project_id')])
+                        ->get('https://cardano-mainnet.blockfrost.io/api/v0/txs/'.$addressTransaction->tx_hash.'/utxos');
 
-                            $unit = 'lovelace';
+                    $txInfo = json_decode($responseTxInfo->body());
 
-                            //Log::info('Unit '.$amount->unit.' -- search unit '.$unit);
-                            //Log::info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
+                    $outputs = $txInfo->outputs;
+                    foreach ($outputs as $output) {
 
-                            if ($openPayment->token_policy) {
-                                $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
-                            }
+                        //Log::info('Output address '.$output->address.' -- receiver address '.$openPayment->wallet_receiver);
 
-                            if ($amount->unit == $unit
-                                && $amount->quantity = $openPayment->token_amount) {
+                        if ($output->address == $openPayment->wallet_receiver) {
+                            foreach ($output->amount as $amount) {
 
-                                //Log::info('Payment founnd');
-                                $paymentFound = true;
-                                $paymentTxID = $addressTransaction->tx_hash;
-                                break;
-                            } else {
-                                //Log::info('Payment not yet founnd');
+                                $unit = 'lovelace';
+
+                                //Log::info('Unit '.$amount->unit.' -- search unit '.$unit);
+                                //Log::info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
+
+                                if ($openPayment->token_policy) {
+                                    $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
+                                }
+
+                                if ($amount->unit == $unit
+                                    && $amount->quantity == $openPayment->token_amount) {
+
+                                    //Log::info('Payment founnd');
+                                    $paymentFound = true;
+                                    $paymentTxID = $addressTransaction->tx_hash;
+                                    break;
+                                } else {
+                                    //Log::info('Payment not yet found');
+                                }
                             }
                         }
+                        if ($paymentFound) {
+                            break;
+                        }
                     }
-
                     if ($paymentFound) {
                         break;
                     }
+                }
+                if ($paymentFound) {
+                    break;
                 }
             }
 
