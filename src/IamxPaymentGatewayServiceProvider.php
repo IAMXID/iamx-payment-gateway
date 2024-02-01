@@ -20,6 +20,13 @@ class IamxPaymentGatewayServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
+        $this->app->make('config')->set('logging.channels.paymentGateway', [
+            'driver' => 'daily',
+            'path' => storage_path('logs/paymentGateway.log'),
+            'level' => 'info',
+        ]);
+
         if ($this->app->runningInConsole()) {
 
             $this->publishes([
@@ -37,13 +44,6 @@ class IamxPaymentGatewayServiceProvider extends ServiceProvider
                 CheckTokenPayment::class
             ]);
         }
-
-        $this->app->make('config')->set('logging.channels.paymentGateway', [
-            'driver' => 'daily',
-            'path' => storage_path('logs/paymentGateway.log'),
-            'level' => 'info',
-        ]);
-
 
         // Load package routes
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
