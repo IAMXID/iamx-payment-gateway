@@ -73,10 +73,16 @@ class CheckTokenPayment extends Command
                     if ($output->address == $openPayment->wallet_receiver) {
                         foreach ($output->amount as $amount) {
 
-                            //Log::info('Unit '.$amount->unit.' -- search unit '.$openPayment->token_policy || $openPayment->asset_name_hex);
+                            $unit = 'lovelace';
+
+                            //Log::info('Unit '.$amount->unit.' -- search unit '.$unit);
                             //Log::info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
 
-                            if ($amount->unit == $openPayment->token_policy || $openPayment->asset_name_hex
+                            if ($openPayment->token_policy) {
+                                $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
+                            }
+
+                            if ($amount->unit == $unit
                                 && $amount->quantity = $openPayment->token_amount) {
 
                                 //Log::info('Payment founnd');

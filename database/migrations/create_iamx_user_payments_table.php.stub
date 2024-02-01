@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('wallet_sender');
             $table->integer('after_blockheight');
             $table->decimal('token_amount', 20, 8);
-            $table->string('token_policy');
-            $table->string('asset_name_hex');
+            $table->string('token_policy')->nullable();
+            $table->string('asset_name_hex')->nullable();
             $table->string('tx_id')->nullable();
             $table->boolean('is_paid')->default(false);
             $table->timestamps();
