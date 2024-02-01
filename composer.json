@@ -1,0 +1,26 @@
+{
+  "name": "iamxid/iamx-payment-gateway",
+  "description": "IAMX payment gateway is a Laravel package which allows users to pay a fee using cardano native token.",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Jochen Heinz",
+      "email": "support@cardano-blockhouse.de"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "IAMXID\\IamxPaymentGateway\\": "src"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "IAMXID\\IamxPaymentGateway\\IamxPaymentGatewayServiceProvider"
+      ]
+    }
+  }
+}
