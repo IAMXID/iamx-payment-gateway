@@ -5,10 +5,12 @@ namespace IAMXID\IamxPaymentGateway\Http\Controllers;
 use IAMXID\IamxPaymentGateway\Models\IamxUserPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentGatewayController extends Controller
 {
     public function setNewPayment(Request $request) {
+
         $paymentUUID = $request->uuid;
         $walletReceiver = $request->wallet_receiver;
         $walletSender = $request->wallet_sender;
@@ -16,6 +18,17 @@ class PaymentGatewayController extends Controller
         $token_amount = $request->token_amount;
         $token_policy_id = $request->token_policy_id;
         $token_name_hex = $request->token_name_hex;
+
+        if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('setNewPayment has been called.');
+            Log::channel('paymentGateway')->info('uuid: '.$paymentUUID);
+            Log::channel('paymentGateway')->info('wallet_receiver: '.$walletReceiver);
+            Log::channel('paymentGateway')->info('wallet_sender: '.$walletSender);
+            Log::channel('paymentGateway')->info('after_blockheight: '.$after_blockheight);
+            Log::channel('paymentGateway')->info('token_amount: '.$token_amount);
+            Log::channel('paymentGateway')->info('token_policy_id: '.$token_policy_id);
+            Log::channel('paymentGateway')->info('token_name_hex: '.$token_name_hex);
+        }
 
         $error_message = '';
 
@@ -53,8 +66,14 @@ class PaymentGatewayController extends Controller
         );
 
         if ($newPayment) {
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('New payment with uuid '.$paymentUUID.' has been inserted to the database');
+            }
             return array('status' => 'Payment UUID has been inserted to the database.');
         } else {
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('New payment with uuid '.$paymentUUID.' has not been inserted to the database');
+            }
             return array('status' => 'Something went wrong while inserting the new row to the database.');
         }
 
@@ -62,6 +81,11 @@ class PaymentGatewayController extends Controller
 
     public function checkPayment(Request $request) {
         $paymentUUID = $request->uuid;
+
+        if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('checkPayment has been called.');
+            Log::channel('paymentGateway')->info('uuid: '.$paymentUUID);
+        }
 
         $error_message = '';
 
@@ -79,13 +103,22 @@ class PaymentGatewayController extends Controller
             ->first();
 
         if (!$userpayment) {
-            return array('status' => 'UUID not found in the database');
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('UUID '.$paymentUUID.'not found in the database.');
+            }
+            return array('status' => 'UUID not found in the database.');
         }
 
         if ($userpayment->is_paid == 1) {
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('Payment for UUID '.$paymentUUID.' found in the database. Tx-hash: '.$userpayment->tx_id);
+            }
             return array('status' => 'payment found', 'tx_hash' => $userpayment->tx_id);
         } else {
-            return array('status' => 'Payment not yet found');
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('Payment for UUID '.$paymentUUID.' not yet found.');
+            }
+            return array('status' => 'Payment not yet found.');
         }
     }
 }

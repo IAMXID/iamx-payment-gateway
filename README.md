@@ -1,6 +1,6 @@
 # iamx-payment-gateway
 
-IAMX payment gateway is a Laravel package which allows users to pay a fee using cardano native token.
+IAMX payment gateway is a Laravel package which allows users to pay a fee using ADA or cardano native token.
 
 - [IAMX-paymwnt-gateway](#iamx-wallet-connect)
     - [Installation](#Installation)
@@ -43,6 +43,12 @@ Add the Blockfrost project id to the file /config/blockfrost.php
 return [
 'project_id' => 'mainnet...',
 ];
+```
+
+Add the variable PAYMENT_GATEWAY_LOGGER to the env file to active logging of the package.
+
+```
+PAYMENT_GATEWAY_LOGGER=true
 ```
 
 ## Usage

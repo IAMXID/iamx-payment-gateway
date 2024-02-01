@@ -6,7 +6,7 @@ use IAMXID\IamxPaymentGateway\Models\IamxUserPayment;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-//use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Log;
 
 class CheckTokenPayment extends Command
 {
@@ -29,6 +29,11 @@ class CheckTokenPayment extends Command
      */
     public function handle()
     {
+
+        if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('checkTokenPayment started.');
+        }
+
         // Select open payments
         $openPayments = DB::table('iamx_user_payments')
             ->where('is_paid', '=', false)
@@ -38,7 +43,9 @@ class CheckTokenPayment extends Command
         // Loop over open payments
         foreach ($openPayments as $openPayment) {
 
-            //Log::info('Open payment for address '.$openPayment->wallet_sender.' found');
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('Open payment for address '.$openPayment->wallet_sender.' found');
+            }
 
             $paymentFound = false;
             $paymentTxID = null;
@@ -52,7 +59,9 @@ class CheckTokenPayment extends Command
 
             foreach ($accountAddresses as $accountAddress) {
 
-                //Log::info('Wallet address '.$accountAddress->address.' is used for search');
+                if(env('PAYMENT_GATEWAY_LOGGER')) {
+                    Log::channel('paymentGateway')->info('Wallet address '.$accountAddress->address.' is used for search');
+                }
 
                 $responseAddressTransactions = Http::retry(5, 100)
                     ->timeout(30)
@@ -67,7 +76,9 @@ class CheckTokenPayment extends Command
 
                 foreach ($addressTransactions as $addressTransaction) {
 
-                    //Log::info('tx-hash '.$addressTransaction->tx_hash.' used.');
+                    if(env('PAYMENT_GATEWAY_LOGGER')) {
+                        Log::channel('paymentGateway')->info('tx-hash '.$addressTransaction->tx_hash.' used.');
+                    }
 
                     $responseTxInfo = Http::retry(5, 100)
                         ->timeout(30)
@@ -79,15 +90,19 @@ class CheckTokenPayment extends Command
                     $outputs = $txInfo->outputs;
                     foreach ($outputs as $output) {
 
-                        //Log::info('Output address '.$output->address.' -- receiver address '.$openPayment->wallet_receiver);
+                        if(env('PAYMENT_GATEWAY_LOGGER')) {
+                            Log::channel('paymentGateway')->info('Output address '.$output->address.' -- receiver address '.$openPayment->wallet_receiver);
+                        }
 
                         if ($output->address == $openPayment->wallet_receiver) {
                             foreach ($output->amount as $amount) {
 
                                 $unit = 'lovelace';
 
-                                //Log::info('Unit '.$amount->unit.' -- search unit '.$unit);
-                                //Log::info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
+                                if(env('PAYMENT_GATEWAY_LOGGER')) {
+                                    Log::channel('paymentGateway')->info('Unit '.$amount->unit.' -- search unit '.$unit);
+                                    Log::channel('paymentGateway')->info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
+                                }
 
                                 if ($openPayment->token_policy) {
                                     $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
@@ -96,12 +111,16 @@ class CheckTokenPayment extends Command
                                 if ($amount->unit == $unit
                                     && $amount->quantity == $openPayment->token_amount) {
 
-                                    //Log::info('Payment founnd');
+                                    if(env('PAYMENT_GATEWAY_LOGGER')) {
+                                        Log::channel('paymentGateway')->info('Payment found');
+                                    }
                                     $paymentFound = true;
                                     $paymentTxID = $addressTransaction->tx_hash;
                                     break;
                                 } else {
-                                    //Log::info('Payment not yet found');
+                                    if(env('PAYMENT_GATEWAY_LOGGER')) {
+                                        Log::channel('paymentGateway')->info('Payment not yet found');
+                                    }
                                 }
                             }
                         }
@@ -123,6 +142,9 @@ class CheckTokenPayment extends Command
                     ->update(['is_paid' => true, 'tx_id' => $paymentTxID]);
             }
 
+        }
+        if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('checkTokenPayment finished.');
         }
     }
 }

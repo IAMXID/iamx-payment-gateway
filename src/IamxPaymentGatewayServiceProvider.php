@@ -38,6 +38,12 @@ class IamxPaymentGatewayServiceProvider extends ServiceProvider
             ]);
         }
 
+        $this->app->make('config')->set('logging.channels.paymentGateway', [
+            'driver' => 'daily',
+            'path' => storage_path('logs/paymentGateway.log'),
+            'level' => 'info',
+        ]);
+
 
         // Load package routes
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
