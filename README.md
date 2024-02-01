@@ -65,6 +65,12 @@ Use the GET route [ROOT_URL]/iamx_payment_gateway/checkPayment to check if the p
 curl --location '[ROOT_URL]/iamx_payment_gateway/checkPayment?uuid=[UUID of the transaction]'
 ```
 
+Setup a cronjob which executes the command iamx_payment_gateway:checkTokenPayment every minute
+
+```
+* * * * * cd /[PATH TO THE PROJECT]; php artisan iamx_payment_gateway:checkTokenPayment >> /dev/null 2>&1
+```
+
 ## Bugs and Suggestions
 
 ## Copyright and License
