@@ -36,9 +36,9 @@ class PaymentGatewayController extends Controller
         $userpayment = $this->checkForPayment($paymentUUID);
 
         if (!$userpayment) {
-            return array('status' => 'UUID not found in the database.');
+            return array('status' => 'UUID or payment confirmation not found in the database.');
         } else {
-            return array('status' => 'payment found');
+            return array('status' => 'Payment found');
         }
     }
 }
