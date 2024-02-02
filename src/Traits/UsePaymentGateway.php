@@ -11,6 +11,7 @@ trait UsePaymentGateway {
     public function setPayment($uuid, $wallet_receiver, $wallet_sender, $after_blockheight, $token_amount, $token_policy_id = null, $token_name_hex = null)
     {
         if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('---------------------------------------------------------------');
             Log::channel('paymentGateway')->info('setPayment has been called.');
             Log::channel('paymentGateway')->info('uuid: '.$uuid);
             Log::channel('paymentGateway')->info('wallet_receiver: '.$wallet_receiver);
@@ -41,7 +42,7 @@ trait UsePaymentGateway {
 
         if ($error_message != '') {
             Log::channel('paymentGateway')->info('Error: '.$error_message);
-            Log::channel('paymentGateway')->info('setPayment ended.');
+            Log::channel('paymentGateway')->info('setPayment finished.');
             return false;
         }
 
@@ -61,13 +62,13 @@ trait UsePaymentGateway {
         if ($newPayment) {
             if(env('PAYMENT_GATEWAY_LOGGER')) {
                 Log::channel('paymentGateway')->info('New payment with uuid '.$uuid.' has been inserted to the database');
-                Log::channel('paymentGateway')->info('setPayment ended.');
+                Log::channel('paymentGateway')->info('setPayment finished.');
             }
             return true;
         } else {
             if(env('PAYMENT_GATEWAY_LOGGER')) {
                 Log::channel('paymentGateway')->info('New payment with uuid '.$uuid.' has not been inserted to the database');
-                Log::channel('paymentGateway')->info('setPayment ended.');
+                Log::channel('paymentGateway')->info('setPayment finished.');
             }
             return false;
         }
@@ -76,6 +77,7 @@ trait UsePaymentGateway {
     public function checkForPayment($uuid)
     {
         if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('---------------------------------------------------------------');
             Log::channel('paymentGateway')->info('checkForPayment has been called.');
             Log::channel('paymentGateway')->info('uuid: '.$uuid);
         }
@@ -88,7 +90,7 @@ trait UsePaymentGateway {
 
         if ($error_message != '') {
             Log::channel('paymentGateway')->info('Error: '.$error_message);
-            Log::channel('paymentGateway')->info('checkForPayment ended.');
+            Log::channel('paymentGateway')->info('checkForPayment finished.');
             return false;
         }
 
@@ -100,7 +102,7 @@ trait UsePaymentGateway {
         if (!$userpayment) {
             if(env('PAYMENT_GATEWAY_LOGGER')) {
                 Log::channel('paymentGateway')->info('UUID '.$uuid.' not found in the database.');
-                Log::channel('paymentGateway')->info('checkForPayment ended.');
+                Log::channel('paymentGateway')->info('checkForPayment finished.');
             }
             return false;
         }
@@ -108,15 +110,57 @@ trait UsePaymentGateway {
         if ($userpayment->is_paid == 1) {
             if(env('PAYMENT_GATEWAY_LOGGER')) {
                 Log::channel('paymentGateway')->info('Payment for UUID '.$uuid.' found in the database. Tx-hash: '.$userpayment->tx_id);
-                Log::channel('paymentGateway')->info('checkForPayment ended.');
+                Log::channel('paymentGateway')->info('checkForPayment finished.');
             }
             return true;
         } else {
             if(env('PAYMENT_GATEWAY_LOGGER')) {
                 Log::channel('paymentGateway')->info('Payment for UUID '.$uuid.' not yet found.');
-                Log::channel('paymentGateway')->info('checkForPayment ended.');
+                Log::channel('paymentGateway')->info('checkForPayment finished.');
             }
             return false;
         }
+    }
+
+    public function isPendingPayment($uuid)
+    {
+        if(env('PAYMENT_GATEWAY_LOGGER')) {
+            Log::channel('paymentGateway')->info('---------------------------------------------------------------');
+            Log::channel('paymentGateway')->info('isPending has been called.');
+            Log::channel('paymentGateway')->info('uuid: '.$uuid);
+        }
+
+        $error_message = '';
+
+        if (!isset($uuid)) {
+            $error_message .= 'uuid can not be null';
+        }
+
+        if ($error_message != '') {
+            Log::channel('paymentGateway')->info('Error: '.$error_message);
+            Log::channel('paymentGateway')->info('isPending finished.');
+            return false;
+        }
+
+        $userpayment = DB::table('iamx_user_payments')
+            ->select('tx_id')
+            ->where('payment_uuid', '=', $uuid)
+            ->where('is_paid', '=', false)
+            ->first();
+
+        if (!$userpayment) {
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('UUID '.$uuid.' not found.');
+                Log::channel('paymentGateway')->info('checkForPayment finished.');
+            }
+            return false;
+        } else {
+            if(env('PAYMENT_GATEWAY_LOGGER')) {
+                Log::channel('paymentGateway')->info('UUID '.$uuid.' found. Payment is pending.');
+                Log::channel('paymentGateway')->info('checkForPayment finished.');
+            }
+            return true;
+        }
+
     }
 }
