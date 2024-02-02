@@ -99,13 +99,13 @@ class CheckTokenPayment extends Command
 
                                 $unit = 'lovelace';
 
+                                if ($openPayment->token_policy) {
+                                    $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
+                                }
+
                                 if(env('PAYMENT_GATEWAY_LOGGER')) {
                                     Log::channel('paymentGateway')->info('Unit '.$amount->unit.' -- search unit '.$unit);
                                     Log::channel('paymentGateway')->info('Amount '.$amount->quantity.' -- search amount '.$openPayment->token_amount);
-                                }
-
-                                if ($openPayment->token_policy) {
-                                    $unit = $openPayment->token_policy || $openPayment->asset_name_hex;
                                 }
 
                                 if ($amount->unit == $unit
