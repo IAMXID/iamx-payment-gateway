@@ -3,6 +3,7 @@
 namespace IAMXID\IamxPaymentGateway;
 
 use IAMXID\IamxPaymentGateway\Commands\CheckTokenPayment;
+use IAMXID\IamxPaymentGateway\Commands\ClearOldOpenPayments;
 use IAMXID\IamxPaymentGateway\View\Components\PaymentGatewayConnector;
 use Illuminate\Support\ServiceProvider;
 
@@ -42,7 +43,8 @@ class IamxPaymentGatewayServiceProvider extends ServiceProvider
             }
 
             $this->commands([
-                CheckTokenPayment::class
+                CheckTokenPayment::class,
+                ClearOldOpenPayments::class
             ]);
         }
 
