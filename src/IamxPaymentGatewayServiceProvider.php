@@ -3,6 +3,7 @@
 namespace IAMXID\IamxPaymentGateway;
 
 use IAMXID\IamxPaymentGateway\Commands\CheckTokenPayment;
+use IAMXID\IamxPaymentGateway\View\Components\PaymentGatewayConnector;
 use Illuminate\Support\ServiceProvider;
 
 class IamxPaymentGatewayServiceProvider extends ServiceProvider
@@ -47,6 +48,12 @@ class IamxPaymentGatewayServiceProvider extends ServiceProvider
 
         // Load package routes
         $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
+
+        // Load package views
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'iamxpaymentgateway');
+        $this->loadViewComponentsAs('iamxpaymentgateway', [
+            PaymentGatewayConnector::class
+        ]);
 
     }
 }
